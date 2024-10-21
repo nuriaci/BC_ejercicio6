@@ -15,8 +15,8 @@ contract AlquilerPisos {
     uint public fechaVencimientoPago;
     bool public fianzaDevuelta;
     bool public contratoActivo;
-    bool public renovacionAceptadaPorArrendatario;
-    bool public renovacionAceptadaPorArrendador;
+    //bool public renovacionAceptadaPorArrendatario;
+    //bool public renovacionAceptadaPorArrendador;
     bool public pagoPrimerMes = false;
     uint public penalizacion;
     enum motivosFinalizacion {INCUMPLIMIENTO, MUTUOACUERDO, NORENOVACION, DESALOJO, DAMAGE, CAMBIOARRENDADOR, RENUNCIA}
@@ -56,13 +56,13 @@ contract AlquilerPisos {
         duracionContrato = _duracionContrato;
         fechaInicioContrato = block.timestamp;
         fechaVencimientoPago = block.timestamp + 30 days;
-        contratoActivo = true;
         pagoPrimerMes = true;
     }
 
     // Pago de alquiler
     function pagarAlquiler() public payable soloArrendatario{
         require(block.timestamp <= fechaVencimientoPago, "Se ha excedido la fecha de pago.");
+        require(contratoActivo == true, "El contrato no esta activo");
         
         uint256 cantidadPago;
         if(pagoPrimerMes){
@@ -96,15 +96,14 @@ contract AlquilerPisos {
         uint fechaFinContrato = fechaInicioContrato+duracionContrato;
         //Comprobaciones para proponer un nuevo contrato
         require((contratoActivo == true)&&((fechaFinContrato - block.timestamp) >= 30 * 86400), "Quedan menos de 30 dias hasta el fin del contrato");
-        require((contratoActivo == false)&&(fechaFinContrato > block.timestamp), "El contrato ya finalizo");
         require(propuestaPendiente == false, "Ya hay una propuesta de contrato pendiente");
+        //require((contratoActivo == false)&&(fechaFinContrato > block.timestamp), "El contrato ya finalizo");
        
         //nueva proposicion
         nuevaDuracionPropuesta = _nuevaDuracionContrato;
         nuevoPrecioPropuesta = _nuevoPrecioAlquiler;
         propuestaPendiente = true;
         plazoPropuesta = block.timestamp;
-
 
         //aceptar contrato
         emit propuestaRenovacion(_nuevaDuracionContrato, _nuevoPrecioAlquiler);     
@@ -117,6 +116,7 @@ contract AlquilerPisos {
         duracionContrato = nuevaDuracionPropuesta;
         precioAlquiler = nuevoPrecioPropuesta;
         propuestaPendiente = false;
+        contratoActivo = true; //Se acepta el contrato
 
         emit acuerdoAlcanzado(duracionContrato, precioAlquiler);
     }
@@ -132,6 +132,9 @@ contract AlquilerPisos {
             devolverFianza(fianzaDeducida);
         } else if (motivo == motivosFinalizacion.DESALOJO) {
             // ¿que hacemos aqui?
+            devolverFianza(fianzaAlquiler); // No se devuelve nada de la fianza & penalizacion ?
+            arrendador.transfer(fianzaAlquiler/10);
+          
         } else if (motivo == motivosFinalizacion.MUTUOACUERDO || motivo == motivosFinalizacion.NORENOVACION) {
             // Si se finaliza el contrato por mutuo acuerdo o por no renovación, se devuelve la fianza al completo.
             devolverFianza(0);
