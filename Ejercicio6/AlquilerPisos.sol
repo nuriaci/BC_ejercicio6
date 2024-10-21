@@ -150,7 +150,7 @@ contract AlquilerPisos {
 
     function pagarPenalizacion() public payable soloArrendatario {
         require(block.timestamp > fechaVencimientoPago, "El plazo de pago no ha finalizado todavia.");
-        require(msg.value == penalizacion, "Introduce el monto correcto de penalización.");
+        require(msg.value == penalizacion, "Introduce el monto correcto de penalizacion.");
 
         arrendador.transfer(msg.value);
         
