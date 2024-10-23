@@ -35,11 +35,23 @@ A continuación se detallan los **requisitos funcionales** del contrato:
 
 ### 2.1. Definir un caso de uso (Pagar el alquiler)
 
-1. El arrendatario ejecuta la función `pagarAlquiler`.
-2. El contrato verifica que el pago se realiza antes de la fecha de vencimiento y que está activo.
-3. El contrato transfiere la cantidad correspondiente al arrendador.
-4. Se actualiza la fecha de vencimiento para el próximo mes, sumando 30 días.
-5. Se emite un evento que indica que el pago ha sido realizado.
+**Precondiciones**:
+- Contrato activo: El contrato de arrendamiento debe estar activo.
+- La función debe ser invocada por el user: arrendatario.
+- Fecha vencimiento: El pago debe realizarse antes de la fecha límite definida.
+- El arrendatario debe tener suficiente saldo en su cuenta para realizar el pago.
+
+**Flujo**:
+  1. El arrendatario ejecuta la función `pagarAlquiler`.
+  2. El contrato verifica que el pago se realiza antes de la fecha de vencimiento y que está activo.
+  3. El contrato transfiere la cantidad correspondiente al arrendador.
+  4. Se actualiza la fecha de vencimiento para el próximo mes, sumando 30 días.
+  5. Se emite un evento que indica que el pago ha sido realizado.
+
+**Postcondiciones**: 
+- La cantidad correspondiente al alquiler se transfiere al arrendador.
+- Se registra el evento de pago que confirma la transacción.
+- La fecha de vencimiento para el próximo pago del alquiler se actualiza correctamente.
 
 ### 2.2. Definir el contenido del contrato inteligente.
 #### 2.2.1. Datos
