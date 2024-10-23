@@ -40,6 +40,7 @@ A continuación se detallan los **requisitos funcionales** del contrato:
 - La función debe ser invocada por el user: arrendatario.
 - Fecha vencimiento: El pago debe realizarse antes de la fecha límite definida.
 - El arrendatario debe tener suficiente saldo en su cuenta para realizar el pago.
+- En el caso de que sea el primer mes de alquiler, se debe realizar un pago que incluya tanto el alquiler mensual como la fianza.
 
 **Flujo**:
   1. El arrendatario ejecuta la función `pagarAlquiler`.
