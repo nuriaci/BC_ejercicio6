@@ -6,30 +6,30 @@ El contrato **AlquilerPisos** está diseñado para gestionar alquileres de vivie
 
 La implementación de este contrato en la blockchain de Ethereum busca cumplir con una serie de **requisitos no funcionales**:
 
-- **Inmutabilidad**: Los registros de transacciones, como el pago del alquiler o la devolución de fianzas, no podrán ser alterados.
-- **Transparencia y visibilidad**: Las partes involucradas, el arrendador y arrendatario, tienen acceso completo a la información relevante del contrato.
-- **Descentralización**: Al ejecutarse en una blockchain pública, el contrato no depende de una entidad centralizada.
-- **Automatización**: La ejecución automática de procesos, como el pago de alquiler y la devolución de fianzas, elimina la necesidad de intermediarios y garantiza que se cumplan sin intervención manual.
+- **RFN-01**. Inmutabilidad: Los registros de transacciones, como el pago del alquiler o la devolución de fianzas, no podrán ser alterados.
+- **RFN-02**. Transparencia y visibilidad: Las partes involucradas, el arrendador y arrendatario, tienen acceso completo a la información relevante del contrato.
+- **RFN-03**.Descentralización: Al ejecutarse en una blockchain pública, el contrato no depende de una entidad centralizada.
+- **RFN-04**. Automatización: La ejecución automática de procesos, como el pago de alquiler y la devolución de fianzas, elimina la necesidad de intermediarios y garantiza que se cumplan sin intervención manual.
 
 A continuación se detallan los **requisitos funcionales** del contrato:
 
-- **Proponer contrato**: Permite al arrendador proponer nuevas condiciones de contrato, duración y precio, antes de los 30 días del final del contrato actual, siempre que no exista otra propuesta pendiente. Una vez propuesta, el arrendatario debe aceptarla dentro de un plazo de 30 días.
+- **RF-01**. Proponer contrato: Permite al arrendador proponer nuevas condiciones de contrato, duración y precio, antes de los 30 días del final del contrato actual, siempre que no exista otra propuesta pendiente. Una vez propuesta, el arrendatario debe aceptarla dentro de un plazo de 30 días.
 
-- **Aceptar contrato**: El arrendatario podrá aceptar la propuesta dentro del período especificado, activando así las nuevas condiciones del contrato.
+- **RF-02**. Aceptar contrato: El arrendatario podrá aceptar la propuesta dentro del período especificado, activando así las nuevas condiciones del contrato.
 
-- **Pago del alquiler**: Si el contrato está activo y el plazo del pago está dentro del mes (30 días), el arrendatario podrá realizar el pago del alquiler. Si es el primer mes, el arrendatario deberá pagar tanto el alquiler como la fianza. Si no se paga a tiempo, se aplica la penalización por impago.
+- **RF-03**. Pago del alquiler: Si el contrato está activo y el plazo del pago está dentro del mes (30 días), el arrendatario podrá realizar el pago del alquiler. Si es el primer mes, el arrendatario deberá pagar tanto el alquiler como la fianza. Si no se paga a tiempo, se aplica la penalización por impago.
 
-- **Penalizar por impago**: Si el arrendatario no realiza el pago del alquiler a tiempo, el arrendador podrá establecer una penalización. Esta penalización se calcula en función del tiempo transcurrido desde la fecha de vencimiento del pago y se asigna una cantidad específica como sanción por el incumplimiento.
+- **RF-04**. Penalizar por impago: Si el arrendatario no realiza el pago del alquiler a tiempo, el arrendador podrá establecer una penalización. Esta penalización se calcula en función del tiempo transcurrido desde la fecha de vencimiento del pago y se asigna una cantidad específica como sanción por el incumplimiento.
 
-- **Pagar penalización**: El arrendatario podrá pagar la penalización establecida si se ha excedido el plazo de pago. Esta función asegura que se realice el pago correcto de la penalización y que el arrendador reciba la cantidad correspondiente.
+- **RF-05**.Pagar penalización: El arrendatario podrá pagar la penalización establecida si se ha excedido el plazo de pago. Esta función asegura que se realice el pago correcto de la penalización y que el arrendador reciba la cantidad correspondiente.
 
-- **Finalizar contrato**: El arrendador podrá finalizar el contrato por diferentes motivos:
+- **RF-06**.Finalizar contrato: El arrendador podrá finalizar el contrato por diferentes motivos:
   - **Mutuo acuerdo**: En este caso, se devuelve la fianza al completo.
   - **Incumplimiento, daños**: En este caso, se devuelve la fianza reducida.
   - **Desalojo**: En este caso, no se devuelve la fianza y se aplica una penalización del 10% de la fianza.
   - **Cambio arrendador**: Permite cambiar el arrendador del contrato.
 
-- **Devolver fianza**: Al finalizar el contrato, se comprueba que el contrato no haya finalizado, que la fianza no haya sido devuelta y que la cantidad a retener por daños o incumplimientos no exceda la cantidad de la fianza estipulada. Si se cumplen estas condiciones, el arrendador puede devolver la fianza al arrendatario, descontando las deducciones correspondientes según lo establecido.
+- **RF-07**.Devolver fianza: Al finalizar el contrato, se comprueba que el contrato no haya finalizado, que la fianza no haya sido devuelta y que la cantidad a retener por daños o incumplimientos no exceda la cantidad de la fianza estipulada. Si se cumplen estas condiciones, el arrendador puede devolver la fianza al arrendatario, descontando las deducciones correspondientes según lo establecido.
 
 ## 2. Diseño
 
