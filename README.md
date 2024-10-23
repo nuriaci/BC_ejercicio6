@@ -1,4 +1,5 @@
-# Ejercicio 6
+## **Ejercicio 6: Contrato inteligente: Alquiler de pisos** ##
+Alexis Bernárdez Hermida, Nuria Codesido Iglesias
 
 ## 1. Análisis y definición del escenario
 
