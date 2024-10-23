@@ -15,9 +15,9 @@ A continuación se detallan los **requisitos funcionales** del contrato:
 
 - **RF-01**. Proponer contrato: Permite al arrendador proponer nuevas condiciones de contrato, duración y precio, antes de los 30 días del final del contrato actual, siempre que no exista otra propuesta pendiente. Una vez propuesta, el arrendatario debe aceptarla dentro de un plazo de 30 días.
 
-- **RF-02**. Aceptar contrato: El arrendatario podrá aceptar la propuesta dentro del período especificado, activando así las nuevas condiciones del contrato.
+- **RF-02**. Aceptar contrato: El arrendatario podrá aceptar la propuesta dentro del período especificado (30 días), activando así las nuevas condiciones del contrato.
 
-- **RF-03**. Pago del alquiler: Si el contrato está activo y el plazo del pago está dentro del mes (30 días), el arrendatario podrá realizar el pago del alquiler. Si es el primer mes, el arrendatario deberá pagar tanto el alquiler como la fianza. Si no se paga a tiempo, se aplica la penalización por impago.
+- **RF-03**. Pago del alquiler: Si el contrato está activo y el plazo del pago está dentro del mes (30 días), el arrendatario podrá realizar el pago del alquiler. En el caso de que sea el primer mes, el arrendatario deberá pagar tanto el alquiler como la fianza. Si el arrendatario no realiza el pago a tiempo, se aplicará una penalización por impago.
 
 - **RF-04**. Penalizar por impago: Si el arrendatario no realiza el pago del alquiler a tiempo, el arrendador podrá establecer una penalización. Esta penalización se calcula en función del tiempo transcurrido desde la fecha de vencimiento del pago y se asigna una cantidad específica como sanción por el incumplimiento.
 
