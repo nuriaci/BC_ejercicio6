@@ -15,9 +15,7 @@ contract AlquilerPisos {
     uint public fechaVencimientoPago;
     bool public fianzaDevuelta;
     bool public contratoActivo;
-    //bool public renovacionAceptadaPorArrendatario;
-    //bool public renovacionAceptadaPorArrendador;
-    bool public pagoPrimerMes = false;
+    bool public pagoPrimerMes;
     uint public penalizacion;
     enum motivosFinalizacion {INCUMPLIMIENTO, MUTUOACUERDO, NORENOVACION, DESALOJO, DAMAGE, CAMBIOARRENDADOR, RENUNCIA}
 
@@ -55,11 +53,11 @@ contract AlquilerPisos {
         fianzaAlquiler = _fianza * 1 ether;
         duracionContrato = _duracionContrato;
         fechaInicioContrato = block.timestamp;
-        fechaVencimientoPago = block.timestamp + 30 days;
+        fechaVencimientoPago = block.timestamp + 30 days; // 30 days -> minutos
         pagoPrimerMes = true;
     }
 
-    // Pago de alquiler
+    // Pago de alquiler  
     function pagarAlquiler() public payable soloArrendatario{
         require(block.timestamp <= fechaVencimientoPago, "Se ha excedido la fecha de pago.");
         require(contratoActivo == true, "El contrato no esta activo");
@@ -72,7 +70,8 @@ contract AlquilerPisos {
             cantidadPago = precioAlquiler;
         }
         require(msg.value == cantidadPago, "La cantidad de dinero no es exacta");
-          
+        
+        
         arrendador.transfer(msg.value);  
         fechaVencimientoPago += 30 days;
         
@@ -86,21 +85,24 @@ contract AlquilerPisos {
         require (fianzaDevuelta == false, "La fianza ya ha sido devuelta.");
         
         uint fianzaADevolver = fianzaAlquiler - _fianzaIncumplimiento;
+        
+       //arrendatario.transfer(fianzaADevolver);
+        (bool success, ) = arrendatario.call{value: fianzaADevolver}("");
+        require(success, "Fallo al enviar el Ether");
         fianzaDevuelta = true;
-
-        arrendatario.transfer(fianzaADevolver);
         emit devolucionFianza(fianzaADevolver, block.timestamp);
     }
 
     function proponerContrato(uint _nuevaDuracionContrato,uint _nuevoPrecioAlquiler) public soloArrendador{
-        uint fechaFinContrato = fechaInicioContrato+duracionContrato;
-        //Comprobaciones para proponer un nuevo contrato
-        require((contratoActivo == true)&&((fechaFinContrato - block.timestamp) >= 30 * 86400), "Quedan menos de 30 dias hasta el fin del contrato");
+         if(contratoActivo==true){
+            uint fechaFinContrato = fechaInicioContrato+duracionContrato;
+            //Comprobaciones para proponer un nuevo contrato
+            require(((fechaFinContrato - block.timestamp) >=  30 days), "Quedan menos de 30 dias hasta el fin del contrato");
+        }
         require(propuestaPendiente == false, "Ya hay una propuesta de contrato pendiente");
-        //require((contratoActivo == false)&&(fechaFinContrato > block.timestamp), "El contrato ya finalizo");
        
         //nueva proposicion
-        nuevaDuracionPropuesta = _nuevaDuracionContrato;
+        nuevaDuracionPropuesta = _nuevaDuracionContrato*60 seconds;
         nuevoPrecioPropuesta = _nuevoPrecioAlquiler;
         propuestaPendiente = true;
         plazoPropuesta = block.timestamp;
@@ -122,6 +124,7 @@ contract AlquilerPisos {
     }
 
     function finalizarContrato(motivosFinalizacion motivo, uint fianzaDeducida) public soloArrendador() {
+        require(contratoActivo == true, "El contrato no esta activo");
         contratoActivo = false;
 
         if (motivo == motivosFinalizacion.CAMBIOARRENDADOR){
