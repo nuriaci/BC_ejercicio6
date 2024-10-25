@@ -33,6 +33,8 @@ contract AlquilerPisos {
     event contratoFinalizado(address arrendatario, motivosFinalizacion motivo, uint fechaFinalizacion);
     event penalizacionEstablecida(uint _penalziacion);
     event penalizacionPagada(uint _monto, uint _fecha);
+    event debug(string message);
+
 
     // Modificadores
     modifier soloArrendador(){
@@ -51,10 +53,11 @@ contract AlquilerPisos {
         arrendatario = _inquilino;
         precioAlquiler = _precioAlquiler * 1 ether;
         fianzaAlquiler = _fianza * 1 ether;
-        duracionContrato = _duracionContrato;
+        duracionContrato = _duracionContrato * 1 minutes;
         fechaInicioContrato = block.timestamp;
-        fechaVencimientoPago = block.timestamp + 30 days; // 30 days -> minutos
+        fechaVencimientoPago = block.timestamp + 30 minutes; 
         pagoPrimerMes = true;
+        contratoActivo = true;
     }
 
     // Pago de alquiler  
@@ -73,20 +76,20 @@ contract AlquilerPisos {
         
         
         arrendador.transfer(msg.value);  
-        fechaVencimientoPago += 30 days;
+        fechaVencimientoPago += 30 minutes;
         
         emit pagoRealizado(msg.value, block.timestamp);
     }
 
     // Devolución de fianza
     function devolverFianza(uint _fianzaIncumplimiento) public payable soloArrendador {
-        require (block.timestamp >= fechaInicioContrato + duracionContrato, "El contrato no ha finalizado.");
-        require (_fianzaIncumplimiento <= fianzaAlquiler, "No se puede devolver mas dinero del estipulado por la fianza.");
+        require (contratoActivo==false, "El contrato no ha finalizado.");
         require (fianzaDevuelta == false, "La fianza ya ha sido devuelta.");
+        require (_fianzaIncumplimiento <= fianzaAlquiler, "No se puede devolver mas dinero del estipulado por la fianza.");
         
         uint fianzaADevolver = fianzaAlquiler - _fianzaIncumplimiento;
-        
-       //arrendatario.transfer(fianzaADevolver);
+        require(address(this).balance >= fianzaADevolver, "El contrato no tiene suficiente Ether para devolver la fianza.");
+
         (bool success, ) = arrendatario.call{value: fianzaADevolver}("");
         require(success, "Fallo al enviar el Ether");
         fianzaDevuelta = true;
@@ -97,7 +100,7 @@ contract AlquilerPisos {
          if(contratoActivo==true){
             uint fechaFinContrato = fechaInicioContrato+duracionContrato;
             //Comprobaciones para proponer un nuevo contrato
-            require(((fechaFinContrato - block.timestamp) >=  30 days), "Quedan menos de 30 dias hasta el fin del contrato");
+            require(((fechaFinContrato - block.timestamp) <=  30 minutes), "Quedan mas de 30 minutos hasta el fin del contrato");
         }
         require(propuestaPendiente == false, "Ya hay una propuesta de contrato pendiente");
        
@@ -113,7 +116,7 @@ contract AlquilerPisos {
     }
     function aceptarContrato() public soloArrendatario{
         require(propuestaPendiente == true, "No hay ninguna propuesta de contrato");
-        require(plazoPropuesta + 30 days >= block.timestamp, "La propuesta ha finalizado");
+        require(plazoPropuesta + 30 minutes >= block.timestamp, "La propuesta ha finalizado");
 
         duracionContrato = nuevaDuracionPropuesta;
         precioAlquiler = nuevoPrecioPropuesta;
@@ -123,8 +126,11 @@ contract AlquilerPisos {
         emit acuerdoAlcanzado(duracionContrato, precioAlquiler);
     }
 
-    function finalizarContrato(motivosFinalizacion motivo, uint fianzaDeducida) public soloArrendador() {
+    function finalizarContrato(motivosFinalizacion motivo, uint fianzaDeducida) public payable soloArrendador() {
         require(contratoActivo == true, "El contrato no esta activo");
+        require(address(this).balance >= fianzaAlquiler, "Saldo insuficiente para devolver fianza o penalizacion");
+        emit debug(string(abi.encodePacked("Motivo recibido: ", motivoToString(motivo))));
+
         contratoActivo = false;
 
         if (motivo == motivosFinalizacion.CAMBIOARRENDADOR){
@@ -134,22 +140,22 @@ contract AlquilerPisos {
             // Si se finaliza el contrato por daños o incumplimiento, se reduce o retiene la fianza completa.
             devolverFianza(fianzaDeducida);
         } else if (motivo == motivosFinalizacion.DESALOJO) {
-            // ¿que hacemos aqui?
-            devolverFianza(fianzaAlquiler); // No se devuelve nada de la fianza & penalizacion ?
+            devolverFianza(fianzaAlquiler); // No se devuelve nada de la fianza & penalizacion 
             arrendador.transfer(fianzaAlquiler/10);
           
         } else if (motivo == motivosFinalizacion.MUTUOACUERDO || motivo == motivosFinalizacion.NORENOVACION) {
-            // Si se finaliza el contrato por mutuo acuerdo o por no renovación, se devuelve la fianza al completo.
-            devolverFianza(0);
+            emit debug("Devolviendo fianza por mutuo acuerdo o no renovacion");
+            devolverFianza(fianzaDeducida);
+            emit debug("Fianza devuelta.");
         } 
 
-        emit contratoFinalizado(arrendatario, motivo, block.timestamp);
+       emit contratoFinalizado(arrendatario, motivo, block.timestamp);
     }
 
     // Penalización en caso de impago
     function penalizarPorImpago() external soloArrendador {
         require(block.timestamp > fechaVencimientoPago, "El plazo de pago no ha finalizado todavia.");
-        penalizacion = (block.timestamp - fechaVencimientoPago) / 1 days * 0.05 ether;
+        penalizacion = (block.timestamp - fechaVencimientoPago) / 1 minutes * 0.05 ether;
         
         emit penalizacionEstablecida(penalizacion);
     }
@@ -163,5 +169,15 @@ contract AlquilerPisos {
         emit penalizacionPagada(msg.value,block.timestamp);
     }
 
+function motivoToString(motivosFinalizacion _motivo) internal pure returns (string memory) {
+    if (_motivo == motivosFinalizacion.INCUMPLIMIENTO) return "INCUMPLIMIENTO";
+    if (_motivo == motivosFinalizacion.MUTUOACUERDO) return "MUTUOACUERDO";
+    if (_motivo == motivosFinalizacion.NORENOVACION) return "NORENOVACION";
+    if (_motivo == motivosFinalizacion.DESALOJO) return "DESALOJO";
+    if (_motivo == motivosFinalizacion.DAMAGE) return "DAMAGE";
+    if (_motivo == motivosFinalizacion.CAMBIOARRENDADOR) return "CAMBIOARRENDADOR";
+    if (_motivo == motivosFinalizacion.RENUNCIA) return "RENUNCIA";
+    return "DESCONOCIDO";
+}
 
 }
